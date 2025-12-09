@@ -14,11 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ✅ تعطيل buildx نهائيًا
-      - name: Disable Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          rm -f ~/.docker/cli-plugins/docker-buildx
+      # ✅ إيقاف BuildKit نهائيًا
+      - name: Disable Docker BuildKit
+        run: echo "DOCKER_BUILDKIT=0" >> $GITHUB_ENV
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -26,12 +24,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # ✅ بناء الصورة باستخدام docker التقليدي
-      - name: Build Docker image (classic docker)
-        run: |
-          /usr/bin/docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/flask-app:latest .
+      # ✅ تحديد الـ context صراحة ./ بدل .
+      - name: Build Docker image (final fix)
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/flask-app:latest ./
 
       - name: Push Docker image
-        run: |
-          /usr/bin/docker push ${{ secrets.DOCKERHUB_USERNAME }}/flask-app:latest
-
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/flask-app:latest
